@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Home - Exam Portal</title>
+
+    <!-- Bootstrap CSS -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Custom Styles -->
+    <style>
+      body {
+        transition: background-color 0.15s, color 0.3s;
+      }
+      .navbar {
+        box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.2);
+      }
+      .nav-link {
+        font-size: 18px;
+        font-weight: 500;
+        transition: color 0.3s;
+      }
+      .nav-link:hover {
+        color: #007bff !important;
+      }
+      .profile-container {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .profile-img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid #007bff;
+        box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+        transition: transform 0.15s;
+      }
+      .profile-img:hover {
+        transform: scale(1.1);
+      }
+      .dark-mode {
+        background-color: #1a1a1a;
+        color: white;
+      }
+      .dark-mode .navbar {
+        background-color: #343a40 !important;
+      }
+      .dark-mode .navbar-brand {
+        color: white;
+      }
+      .dark-mode .nav-link {
+        color: white !important;
+      }
+      .dark-mode .nav-link:hover {
+        color: #007bff !important;
+      }
+      .footer {
+        text-align: center;
+        padding: 15px;
+        background-color: #f8f9fa;
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+      }
+      .dark-mode .footer {
+        background-color: #343a40;
+        color: white;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg bg-light">
+      <div class="container-fluid">
+        <a class="navbar-brand fw-bold" href="#">Exam Portal</a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav mx-auto">
+            <li class="nav-item">
+              <a class="nav-link active" href="#">Home</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">Notifications</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('exam') }}">Exams</a>
+            </li>
+            {% if user.role == "faculty" %}
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('review_violations') }}">Review</a>
+            </li>
+            {% endif %}
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('result') }}">Results</a>
+            </li>
+          </ul>
+
+          <!-- Right Side Profile Info & Dark Mode Toggle -->
+          <div class="d-flex align-items-center">
+            <button
+              class="btn btn-outline-dark me-3"
+              onclick="toggleDarkMode()"
+            >
+              🌙
+            </button>
+            <!-- Right Side Profile Info -->
+            <div class="profile-container ms-auto">
+              <a href="{{ url_for('profile') }}" class="nav-link">
+                <img
+                  src="{% if image and image.startswith('data:image') %}{{ image }}{% else %}{{ url_for('static', filename='default-profile.png') }}{% endif %}"
+                  class="profile-img"
+                  alt="Profile Picture"
+                  onclick="{{ url_for('profile') }}"
+                />
+                {{ user.name }}</a
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container text-center mt-5">
+      <h1>Welcome, {{ user.name }} 👋</h1>
+      <p>Stay updated with your latest exams, results, and notifications.</p>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <p>&copy; 2025 Exam Portal | Contact Us: examportal@example.com</p>
+    </div>
+
+    <!-- JavaScript for Dark Mode -->
+    <script>
+      // Function to toggle dark mode and save the preference
+      function toggleDarkMode() {
+        document.body.classList.toggle("dark-mode");
+        let button = document.getElementsByClassName("btn-outline-dark")[0];
+
+        // Save theme preference to localStorage
+        if (document.body.classList.contains("dark-mode")) {
+          localStorage.setItem("theme", "dark");
+          button.textContent = "☀️ Light Mode";
+          button.style.backgroundColor = "white";
+          button.style.color = "black";
+        } else {
+          localStorage.setItem("theme", "light");
+          button.textContent = "🌙 Dark Mode";
+          button.style.backgroundColor = "black";
+          button.style.color = "white";
+        }
+      }
+
+      // Apply the saved theme on page load
+      window.onload = function () {
+        let button = document.getElementsByClassName("btn-outline-dark")[0];
+
+        if (localStorage.getItem("theme") === "dark") {
+          document.body.classList.add("dark-mode");
+          button.textContent = "☀️ Light Mode";
+          button.style.backgroundColor = "white";
+          button.style.color = "black";
+        } else {
+          button.textContent = "🌙 Dark Mode";
+          button.style.backgroundColor = "black";
+          button.style.color = "white";
+        }
+      };
+    </script>
+  </body>
+</html>

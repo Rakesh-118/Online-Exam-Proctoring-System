@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Exam Instructions</title>
+    <style>
+      * {
+        -webkit-user-select: none;  /* Chrome, Safari */
+        -moz-user-select: none;     /* Firefox */
+        -ms-user-select: none;      /* IE10+/Edge */
+        user-select: none;          /* Standard */ˀ
+      }
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        user-select: none;
+      }
+      .container {
+        width: 80%;
+        margin: 20px auto;
+        padding: 20px;
+        border: 1px solid #ddd;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        text-align: center;
+      }
+      h1 {
+        color: #003366;
+      }
+      .instructions {
+        margin-top: 20px;
+        text-align: left;
+      }
+      .checkbox-container {
+        margin-top: 20px;
+        padding: 10px;
+        background: #f8d7da;
+        color: red;
+        text-align: center;
+      }
+      .start-button {
+        background: #ccc;
+        padding: 10px 20px;
+        border: none;
+        cursor: not-allowed;
+        margin-top: 20px;
+      }
+      #instruction,
+      #assessment,
+      #loading {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        overflow: scroll;
+        background-color: white;
+      }
+
+      #loading > img {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+      }
+      #assessment > div:nth-child(1) {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 50px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 2px solid rgb(191, 191, 191);
+        padding: 0 10px;
+      }
+      #assessment > div:nth-child(2) {
+        position: absolute;
+        top: 52px;
+        left: 0;
+        right: 351px;
+        bottom: 0;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+      #assessment > div:nth-child(3) {
+        position: absolute;
+        top: 52px;
+        right: 0;
+        bottom: 0;
+        width: 349px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        border-left: 2px solid rgb(191, 223, 255);
+        background-color: rgb(223, 247, 255);
+      }
+      #assessment > div:nth-child(2) > div:last-of-type {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 20px;
+        background-color: rgb(223, 223, 223);
+        border-top: 1px solid rgb(191, 191, 191);
+      }
+      #assessment > div:nth-child(3) > div:last-of-type {
+        display: flex;
+        flex-direction: column;
+        padding: 10px 20px;
+        gap: 5px;
+        border-top: 1px solid rgb(191, 223, 255);
+      }
+      #assessment
+        > div:nth-child(3)
+        > div:last-of-type
+        > div:first-of-type
+        > button {
+        width: calc(50% - 2.5px);
+      }
+      #assessment button:not(.submit) {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 10px;
+        background-color: rgb(191, 223, 255);
+      }
+      .submit {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 10px;
+        background-color: rgb(127, 215, 223);
+        color: white;
+      }
+      #assessment > div:nth-child(2) > div:first-of-type > div:first-of-type {
+        display: flex;
+        justify-content: space-between;
+        padding: 5px 10px;
+        border-bottom: 1px solid rgb(191, 191, 191);
+      }
+      #posMark {
+        color: green;
+      }
+      #posMark::before {
+        content: "+";
+      }
+      #negMark {
+        color: red;
+      }
+      #negMark::before {
+        content: "-";
+      }
+      #assessment
+        > div:nth-child(3)
+        > div:first-of-type
+        > div:first-of-type
+        > div:first-of-type {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding-top: 10px;
+      }
+      #assessment
+        > div:nth-child(3)
+        > div:first-of-type
+        > div:first-of-type
+        > div:last-of-type {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-evenly;
+        align-items: center;
+        padding: 0 20px;
+        margin-bottom: 20px;
+        gap: 20px;
+        font-size: 0.6em;
+      }
+      #profile {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        border: 1px solid black;
+        text-align: center;
+      }
+      #assessment
+        > div:nth-child(3)
+        > div:first-of-type
+        > div:last-of-type
+        > div:first-of-type {
+        background-color: rgb(191, 223, 255);
+        padding: 5px 10px;
+      }
+      #assessment
+        > div:nth-child(3)
+        > div:first-of-type
+        > div:last-of-type
+        > div:last-of-type {
+        display: grid;
+        grid-template-columns: repeat(5, auto);
+        padding: 20px;
+        gap: 10px;
+      }
+      .answered,
+      #answered {
+        font-size: small;
+        text-align: center;
+        color: white;
+        background-color: green;
+        padding: 5px 15px;
+        border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+      }
+      .not-answered,
+      #not-answered {
+        font-size: small;
+        text-align: center;
+        color: white;
+        background-color: red;
+        padding: 5px 15px;
+        border-radius: 0 0 50% 50% / 0 0 100% 100%;
+      }
+      .not-visited {
+        font-size: small;
+        text-align: center;
+        background-color: white;
+        padding: 5px 15px;
+        border: 1px solid black;
+      }
+      .marked {
+        font-size: small;
+        text-align: center;
+        background-color: pink;
+        padding: 5px 15px;
+        border-radius: 50%;
+      }
+      .marked-answered {
+        font-size: small;
+        text-align: center;
+        color: white;
+        background-color: purple;
+        padding: 5px 15px;
+        border-radius: 50%;
+      }
+      #popup {
+        box-shadow: 0px 0px 10px gray;
+        border-radius: 10px;
+      }
+      button,
+      #assessment
+        > div:nth-child(3)
+        > div:first-of-type
+        > div:last-of-type
+        > div:last-of-type
+        > span {
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="assessment">
+      <div>
+        <h2>Online Assessment</h2>
+        <div>
+          <b>Time Left</b> <span id="hours">00</span>:<span id="minutes"
+            >00</span
+          >:<span id="seconds">00</span>
+        </div>
+      </div>
+      <div>
+        <div>
+          <div>
+            <b id="question-number"></b>
+          </div>
+          <div style="margin-left: 40px; margin-top: 10px">
+            <h3 id="question-text"></h3>
+            <div>
+              <input type="radio" id="option1" name="option" value="1" />
+              <label id="option1-label" for="option1"></label><br />
+
+              <input type="radio" id="option2" name="option" value="2" />
+              <label id="option2-label" for="option2"></label><br />
+
+              <input type="radio" id="option3" name="option" value="3" />
+              <label id="option3-label" for="option3"></label><br />
+
+              <input type="radio" id="option4" name="option" value="4" />
+              <label id="option4-label" for="option4"></label><br />
+            </div>
+          </div>
+        </div>
+        <div>
+          <div>
+            <button onclick="markResponseAndNext()">Mark for Review & Next</button>
+            <button onclick="clearResponse()">Clear Response</button>
+          </div>
+          <button class="submit" onclick="saveResponseAndNext()">
+            Save & Next
+          </button>
+        </div>
+      </div>
+      <div>
+        <div>
+          <div>
+            <div>
+              <img
+                src="{% if image and image.startswith('data:image') %}{{ image }}{% else %}{{ url_for('static', filename='default-profile.png') }}{% endif %}"
+                alt="Profile"
+                id="profile"
+              />
+              <h3>{{ user.name }}</h3>
+            </div>
+            <div>
+              <div>
+                <span id="answered" class="answered-count">0</span>
+                <span style="font-size: medium">Answered</span>
+              </div>
+              <div>
+                <span id="not-answered" class="not-answered-count">0</span>
+                <span style="font-size: medium">Not Answered</span>
+              </div>
+              <div style="margin-left:-50px; position:relative">
+                <span id="not-visited" class="not-visited">0</span>
+                <span style="font-size: medium">Not Visited</span>
+              </div>
+              <div style="position: relative; margin-left: -55px;">
+                <span id="marked" class="marked">0</span>
+                <span style="font-size: medium">Marked</span>
+              </div>
+              <div>
+                <span id="marked-answered" class="marked-answered">0</span>
+                <span style="font-size: medium">Marked and Answered</span>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div><b>Questions</b></div>
+            <div>
+              <span id="qbtn-0" class="not-visited" onclick="loadQuestion(0)"
+                >1</span
+              >
+              <span id="qbtn-1" class="not-visited" onclick="loadQuestion(1)"
+                >2</span
+              >
+              <span id="qbtn-2" class="not-visited" onclick="loadQuestion(2)"
+                >3</span
+              >
+              <span id="qbtn-3" class="not-visited" onclick="loadQuestion(3)"
+                >4</span
+              >
+              <span id="qbtn-4" class="not-visited" onclick="loadQuestion(4)"
+                >5</span
+              >
+              <span id="qbtn-5" class="not-visited" onclick="loadQuestion(5)"
+                >6</span
+              >
+              <span id="qbtn-6" class="not-visited" onclick="loadQuestion(6)"
+                >7</span
+              >
+              <span id="qbtn-7" class="not-visited" onclick="loadQuestion(7)"
+                >8</span
+              >
+              <span id="qbtn-8" class="not-visited" onclick="loadQuestion(8)"
+                >9</span
+              >
+              <span id="qbtn-9" class="not-visited" onclick="loadQuestion(9)"
+                >10</span
+              >
+            </div>
+          </div>
+        </div>
+        <div>
+          <button class="submit" onclick="submitTest()">Submit Test</button>
+        </div>
+      </div>
+    </div>
+    <div
+      id="popup"
+      style="
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background-color: white;
+        border: 1px solid black;
+        padding: 20px;
+        z-index: 9999;
+      "
+    >
+      <p id="popup-message"></p>
+      <button id="popup-ok">OK</button>
+      <button id="popup-cancel">Cancel</button>
+    </div>
+
+    <div id="loading">
+      <img
+        src="https://cdn.pixabay.com/animation/2022/07/29/03/42/03-42-05-37_512.gif"
+        alt="loading"
+        width="100px"
+      />
+    </div>
+    <div id="instruction">
+      <div class="container" id="examContainer">
+        <h1>RGUKT Nuzvid</h1>
+        <h2>General Instructions</h2>
+        <div class="instructions">
+          <p>
+            Please read the instructions carefully before starting the exam.
+          </p>
+          <ul>
+            <li>The exam will start once you click "Start Exam".</li>
+            <li>Once started, the exam cannot be paused or restarted.</li>
+            <li>Ensure you have a stable internet connection.</li>
+            <li>
+              Do not switch tabs or minimize the window, or you may be
+              disqualified.
+            </li>
+            <li>You will be recorded. Don't try to cheat</li>
+          </ul>
+        </div>
+
+        <p class="checkbox-container">
+          <input type="checkbox" id="agreeCheckbox" onchange="enableStart()" />
+          I have read and agree to the instructions.
+        </p>
+
+        <button
+          id="startTest"
+          class="start-button"
+          disabled
+          onclick="openFullscreen(); startExam()"
+        >
+          Start Exam
+        </button>
+      </div>
+    </div>
+
+    <script>
+      function openFullscreen() {
+        let elem = document.documentElement;
+        if (elem.requestFullscreen) {
+          elem.requestFullscreen();
+        } else if (elem.mozRequestFullScreen) {
+          // Firefox
+          elem.mozRequestFullScreen();
+        } else if (elem.webkitRequestFullscreen) {
+          // Chrome, Safari, Opera
+          elem.webkitRequestFullscreen();
+        } else if (elem.msRequestFullscreen) {
+          // IE/Edge
+          elem.msRequestFullscreen();
+        }
+      }
+
+      function enableStart() {
+        let checkbox = document.getElementById("agreeCheckbox");
+        let startButton = document.getElementById("startTest");
+        if (checkbox.checked) {
+          startButton.style.background = "#28a745";
+          startButton.style.cursor = "pointer";
+          startButton.disabled = false;
+        } else {
+          startButton.style.background = "#ccc";
+          startButton.style.cursor = "not-allowed";
+          startButton.disabled = true;
+        }
+      }
+
+      function startExam() {
+        let subjectid = "{{ subjectid }}";
+        let assessmentid = "{{ assessmentid }}";
+        document.getElementById("instruction").style.display = "none";
+        // Call backend to start proctoring
+        fetch("/start_proctoring")
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.status === "started") {
+              // Hide instruction screen
+
+              // Remove loading screen after some delay
+              setTimeout(() => {
+                document.getElementById("loading").style.display = "none";
+                startTimer();
+              }, 1000); // Optional delay
+            } else {
+              alert("Proctoring failed to start. Try again.");
+            }
+          })
+          .catch((error) => {
+            alert("Error starting proctoring: " + error);
+          });
+      }
+      let duration = 20 * 60; // 20 minutes
+
+      fetch("/get_start_time")
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.start_time) {
+            // Parse start time
+            const startTime = new Date(data.start_time).getTime();
+            const endTime = startTime + duration * 1000;
+      
+            function updateTimer() {
+              const now = new Date().getTime();
+              let remaining = Math.floor((endTime - now) / 1000);
+      
+              if (remaining <= 0) {
+                document.getElementById("hours").innerText = "00";
+                document.getElementById("minutes").innerText = "00";
+                document.getElementById("seconds").innerText = "00";
+                
+                // Ensure every question has some response (set 0 if missing)
+                questionList.forEach(q => {
+                  if (!responses[q.question_number]) {
+                      responses[q.question_number] = "0";
+                  }
+                });
+                fetch('/submit_responses', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    responses: responses
+                  })
+                }).then(response => response.json()).then(data => {
+                  removeAllRestrictions();
+                  fetch('/stop_proctoring', {
+                    method: 'POST'
+                  }).then(response => response.json())
+                    .then(data => {
+                      console.log("Proctoring stopped:", data);
+                      // Proceed to redirect or show popup
+                      showPopup("Test submitted successfully!");
+                    });
+                    // Optionally lock the page or redirect
+                });
+              } else {
+                let hours = Math.floor(remaining / 3600);
+                let minutes = Math.floor((remaining % 3600) / 60);
+                let seconds = remaining % 60;
+                document.getElementById("hours").innerText = hours
+                  .toString()
+                  .padStart(2, "0");
+                document.getElementById("minutes").innerText = minutes
+                  .toString()
+                  .padStart(2, "0");
+                document.getElementById("seconds").innerText = seconds
+                  .toString()
+                  .padStart(2, "0");
+                setTimeout(updateTimer, 1000);
+              }
+            }
+            updateTimer();
+          } else {
+            console.error("Error fetching start time:", data.error);
+          }
+        })
+        .catch((err) => console.error("Fetch Error:", err));
+      
+      function updateCounts() {
+        let answeredCount = 0;
+        let notAnsweredCount = 0;
+        let notVisitedCount = 0;
+        let markedCount = 0;
+        let markedAnsweredCount = 0;
+        for (let i = 0; i < questionList.length; i++) {
+          const btn = document.getElementById(`qbtn-${i}`);
+          if (btn.className === "answered") {
+            answeredCount++;
+          } else if (btn.className === "not-answered") {
+            notAnsweredCount++;
+          } else if (btn.className === "not-visited") {
+            notVisitedCount++;
+          } else if (btn.className === "marked") {
+            markedCount++;
+          } else if (btn.className === "marked-answered") {
+            markedAnsweredCount++;
+          }
+        }
+        document.getElementById("not-visited").innerText = notVisitedCount;
+        document.getElementById("marked").innerText = markedCount;
+        document.getElementById("marked-answered").innerText = markedAnsweredCount;
+        // Update answered and not-answered counts
+        document.getElementById("answered").innerText = answeredCount;
+        document.getElementById("not-answered").innerText = notAnsweredCount;
+      }
+
+      function showConfirmPopup(message, okCallback, cancelCallback) {
+        document.getElementById("popup-message").innerText = message;
+        document.getElementById("popup").style.display = "block";
+
+        //show both OK and Cancel button
+        document.getElementById("popup-ok").style.display = "inline";
+        document.getElementById("popup-cancel").style.display = "inline";
+        // Handle OK
+        document.getElementById("popup-ok").onclick = function () {
+          document.getElementById("popup").style.display = "none";
+          okCallback();
+        };
+
+        // Handle Cancel
+        document.getElementById("popup-cancel").onclick = function () {
+          document.getElementById("popup").style.display = "none";
+          if (cancelCallback) cancelCallback();
+        };
+      }
+      function showPopup(message) {
+        document.getElementById("popup-message").innerText = message;
+        document.getElementById("popup").style.display = "block";
+
+        // Show only OK button
+        document.getElementById("popup-ok").style.display = "inline";
+        document.getElementById("popup-cancel").style.display = "none";
+
+        document.getElementById("popup-ok").onclick = function () {
+          document.getElementById("popup").style.display = "none";
+          // EXIT FULLSCREEN:
+          if (document.fullscreenElement) {
+            document.exitFullscreen();
+          }
+          // Redirect to home:
+          window.location.href = "/home";
+        };
+      }
+      function disableRightClick(e) {
+        e.preventDefault();
+      }
+      document.addEventListener("contextmenu", disableRightClick);
+
+      window.addEventListener("beforeunload", function (e) {
+        // Send request to stop the proctoring script
+        removeAllRestrictions();
+        if (document.fullscreenElement) {
+          document.exitFullscreen();
+        }
+        for(i=0;i<10;i++){
+          const currentQuestion = questionList[i];
+          delete responses[currentQuestion.question_number];
+      }
+      questionList.forEach(q => {
+          if (!responses[q.question_number]) {
+              responses[q.question_number] = "0";
+          }
+      });
+    fetch('/submit_responses', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            responses: responses
+        })
+    }).then(response => response.json()).then(data => {
+        removeAllRestrictions();
+      });
+      fetch('/stop_proctoring', {
+        method: 'POST'
+    }).then(response => response.json())
+      .then(data => {
+          console.log("Proctoring stopped:", data);
+          // Proceed to redirect or show popup
+      });
+        navigator.sendBeacon("/stop_proctoring"); // fires a POST in background
+    });
+    </script>
+    <script>
+        // Rename to avoid conflicts:
+        const questionList = {{ questions | tojson |safe}};
+        let currentIndex = {{ currentIndex }};
+        let responses = {};
+
+        console.log(currentIndex);
+
+        function loadQuestion(index) {
+          const currentBtn = document.getElementById(`qbtn-${index}`);
+          const currentQuestion = questionList[index];
+          // Check if current question was "not-visited"
+          if (currentBtn.className === 'not-visited') {
+              currentBtn.className = 'not-answered';
+          }
+            currentIndex=index;
+
+            const q = questionList[index];
+            document.getElementById("question-number").innerHTML="Question Number "+ q.question_number;
+            document.getElementById("question-text").innerText = q.question;
+
+            document.getElementById("option1-label").innerText = q.option1;
+            document.getElementById("option2-label").innerText = q.option2;
+            document.getElementById("option3-label").innerText = q.option3;
+            document.getElementById("option4-label").innerText = q.option4;
+
+            // Uncheck all radio buttons first
+            document.querySelectorAll('input[name="option"]').forEach(e => e.checked = false);
+
+            // Pre-select response (if exists):
+            const savedResponse = responses[q.question_number];
+            if (savedResponse) {
+                const radios = document.querySelectorAll('input[name="option"]');
+                radios.forEach(r => {
+                    if (r.value === savedResponse.toString()) {
+                        r.checked = true;
+                    }
+                });
+            }
+            updateCounts();
+        }
+
+        function markResponseAndNext(){
+          const selectedOption = document.querySelector('input[name="option"]:checked');
+          const currentQuestion = questionList[currentIndex];
+          const btn = document.getElementById(`qbtn-${currentIndex}`);
+
+          if (selectedOption) {
+              const selectedValue = selectedOption.value;
+              responses[currentQuestion.question_number] = selectedValue;
+
+              // Mark as answered
+              btn.className = 'marked-answered';
+          } else {
+              // No selection → mark as not-answered
+              btn.className = 'marked';
+
+              // Set default value 0:
+              responses[currentQuestion.question_number] = "0";
+          }
+
+          if (currentIndex < questionList.length - 1) {
+              currentIndex++;
+              loadQuestion(currentIndex);
+          } else {
+              showConfirmPopup("Do you want to go back to the first question?", function() {
+                  currentIndex = 0;
+                  loadQuestion(currentIndex);
+              }, function() {
+                  // stay
+              });
+          }
+          updateCounts();
+        }
+
+        function saveResponseAndNext() {
+          const selectedOption = document.querySelector('input[name="option"]:checked');
+          const currentQuestion = questionList[currentIndex];
+          const btn = document.getElementById(`qbtn-${currentIndex}`);
+
+          if (selectedOption) {
+              const selectedValue = selectedOption.value;
+              responses[currentQuestion.question_number] = selectedValue;
+
+              // Mark as answered
+              btn.className = 'answered';
+          } else {
+              // No selection → mark as not-answered
+              btn.className = 'not-answered';
+
+              // Set default value 0:
+              responses[currentQuestion.question_number] = "0";
+          }
+
+          if (currentIndex < questionList.length - 1) {
+              currentIndex++;
+              loadQuestion(currentIndex);
+          } else {
+              showConfirmPopup("Do you want to go back to the first question?", function() {
+                  currentIndex = 0;
+                  loadQuestion(currentIndex);
+              }, function() {
+                  // stay
+              });
+          }
+          updateCounts();
+        }
+
+      function clearResponse() {
+          const currentQuestion = questionList[currentIndex];
+          delete responses[currentQuestion.question_number];
+
+          // Uncheck all radio buttons
+          document.querySelectorAll('input[name="option"]').forEach(e => e.checked = false);
+
+          // Update panel class to not-answered
+          const btn = document.getElementById(`qbtn-${currentIndex}`);
+          btn.className = 'not-answered';
+          updateCounts();
+      }
+
+        function submitTest() {
+            let answeredCount = 0;
+
+            for (let i = 0; i < questionList.length; i++) {
+            const btn = document.getElementById(`qbtn-${i}`);
+            if ((btn.className === "answered") || (btn.className === "marked-answered")) {
+                answeredCount++;
+            }
+            }
+            showConfirmPopup("Number of Questions Answered are : "+answeredCount+". Are you Sure to Submit the Test?", function() {
+                // Ensure every question has some response (set 0 if missing)
+              questionList.forEach(q => {
+                if (!responses[q.question_number]) {
+                    responses[q.question_number] = "0";
+                }
+            });
+          fetch('/submit_responses', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                  responses: responses
+              })
+          }).then(response => response.json()).then(data => {
+              removeAllRestrictions();
+              fetch('/stop_proctoring', {
+                method: 'POST'
+            }).then(response => response.json())
+              .then(data => {
+                  console.log("Proctoring stopped:", data);
+                  // Proceed to redirect or show popup
+                  showPopup("Test submitted successfully!");
+              });
+              // Optionally lock the page or redirect
+          });
+            }, function() {
+                // stay
+            });
+        }
+        function removeAllRestrictions() {
+            document.removeEventListener("contextmenu", disableRightClick);
+            window.onbeforeunload = null;
+        }
+
+        document.addEventListener("visibilitychange", function() {
+            if (document.visibilityState === 'hidden') {
+                // User switched tab or minimized
+                for(i=0;i<10;i++){
+                    const currentQuestion = questionList[i];
+                    delete responses[currentQuestion.question_number];
+                }
+                questionList.forEach(q => {
+                    if (!responses[q.question_number]) {
+                        responses[q.question_number] = "0";
+                    }
+                });
+              fetch('/submit_responses', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                      responses: responses
+                  })
+              }).then(response => response.json()).then(data => {
+                  removeAllRestrictions();
+                  // Optionally lock the page or redirect
+                });
+                fetch('/stop_proctoring', {
+                  method: 'POST'
+              }).then(response => response.json())
+                .then(data => {
+                    console.log("Proctoring stopped:", data);
+                    // Proceed to redirect or show popup
+                    showPopup("You are Failed the Test!");
+                });
+                alert("Tab switch detected! You are Disqualified.");
+
+            }
+        });
+
+        /*window.onload=function(){
+            loadQuestion(currentIndex);
+            updateCounts();
+        }*/
+        window.onload = function() {
+          fetch('/stop_proctoring', {
+            method: 'POST'
+        }).then(response => response.json())
+          .then(data => {
+              console.log("Proctoring stopped:", data);
+          });
+            fetch('/eligible')
+            .then(response => response.json())
+            .then(data => {
+            console.log("Eligibility response:", data);  // ⭐ Check browser console
+
+            if (data.eligible === "True") {
+                loadQuestion(currentIndex);
+                updateCounts();
+            } else {
+                removeAllRestrictions();
+                if (document.fullscreenElement) {
+                    document.exitFullscreen();
+                }
+                alert("Already attempted test");
+                window.location.href = "/home";
+            }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    </script>
+  </body>
+</html>

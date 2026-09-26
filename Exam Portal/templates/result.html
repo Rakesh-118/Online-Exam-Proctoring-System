@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Home - Exam Portal</title>
+
+    <!-- Bootstrap CSS -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Custom Styles -->
+    <style>
+      body {
+        transition: background-color 0.15s, color 0.3s;
+      }
+      .navbar {
+        box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.2);
+      }
+      .nav-link {
+        font-size: 18px;
+        font-weight: 500;
+        transition: color 0.3s;
+      }
+      .nav-link:hover {
+        color: #007bff !important;
+      }
+      .profile-container {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .profile-img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid #007bff;
+        box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+        transition: transform 0.15s;
+      }
+      .profile-img:hover {
+        transform: scale(1.1);
+      }
+      .dark-mode {
+        background-color: #1a1a1a;
+        color: white;
+      }
+      .dark-mode .navbar {
+        background-color: #343a40 !important;
+      }
+      .dark-mode .navbar-brand {
+        color: white;
+      }
+      .dark-mode .nav-link {
+        color: white !important;
+      }
+      .dark-mode .nav-link:hover {
+        color: #007bff !important;
+      }
+      .footer {
+        text-align: center;
+        padding: 15px;
+        background-color: #f8f9fa;
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+      }
+      .dark-mode .footer {
+        background-color: #343a40;
+        color: white;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg bg-light">
+      <div class="container-fluid">
+        <a class="navbar-brand fw-bold" href="#">Exam Portal</a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav mx-auto">
+            <li class="nav-item">
+              <a class="nav-link active" href="{{ url_for('home') }}">Home</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#">Notifications</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('exam') }}">Exams</a>
+            </li>
+            {% if user.role == "faculty" %}
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('review_violations') }}">Review</a>
+            </li>
+            {% endif %}
+            <li class="nav-item">
+              <a class="nav-link" href="#">Results</a>
+            </li>
+          </ul>
+
+          <!-- Right Side Profile Info & Dark Mode Toggle -->
+          <div class="d-flex align-items-center">
+            <button
+              class="btn btn-outline-dark me-3"
+              onclick="toggleDarkMode()"
+            >
+              🌙
+            </button>
+            <!-- Right Side Profile Info -->
+            <div class="profile-container ms-auto">
+              <a href="{{ url_for('profile') }}" class="nav-link">
+                <img
+                  src="{% if image and image.startswith('data:image') %}{{ image }}{% else %}{{ url_for('static', filename='default-profile.png') }}{% endif %}"
+                  class="profile-img"
+                  alt="Profile Picture"
+                  onclick="{{ url_for('profile') }}"
+                />
+                {{ user.name }}</a
+              >
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container text-center mt-5">
+      <table class="table table-bordered mt-3">
+        <thead class="table-light">
+          <tr>
+            {% if user.role|lower == 'faculty' %}
+            <th>Student ID</th>
+            {% endif %}
+            <th>Subject ID</th>
+            <th>Assessment ID</th>
+            <th>Marks</th>
+          </tr>
+        </thead>
+        <tbody id="resultTable"></tbody>
+      </table>
+      {% if user.role|lower == 'faculty' %}
+      <button
+        id="uploadAnswersBtn"
+        class="btn btn-success d-none"
+        onclick="showUploadAnswersForm()"
+      >
+        Upload Answers
+      </button>
+      {% endif %}
+      <button
+        id="getResultsBtn"
+        class="btn btn-primary"
+        onclick="showGetResultsFrom()"
+      >
+        Get Results
+      </button>
+      <div id="uploadAnswersForm" class="mt-4 d-none">
+        <h3>Upload Result</h3>
+        <form id="AnswersForm" class="mb-5" method="post">
+          <!-- Added margin-bottom to avoid overlap -->
+          <input
+            type="text"
+            id="subjectId"
+            name="subjectid"
+            placeholder="Subject ID"
+            required
+            class="form-control mb-2"
+          />
+          <input
+            type="text"
+            id="assessmentId"
+            name="assesmentid"
+            placeholder="Assessment ID"
+            required
+            class="form-control mb-2"
+          />
+
+          <div id="AnswersContainer"></div>
+
+          <button type="submit" class="btn btn-primary mt-3 mb-5">
+            Submit Answers
+          </button>
+        </form>
+      </div>
+      <div id="getResultsForm" class="mt-4 d-none">
+        <h3>Get Results</h3>
+        <form id="ResultsForm" class="mb-5" method="post">
+          <input
+            type="text"
+            id="subjectId"
+            name="subjectid"
+            placeholder="Subject ID"
+            required
+            class="form-control mb-2"
+          />
+          <input
+            type="text"
+            id="assessmentId"
+            name="assesmentid"
+            placeholder="Assessment ID"
+            required
+            class="form-control mb-2"
+          />
+          <button type="submit" class="btn btn-primary mt-3 mb-5">
+            Submit
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <p>&copy; 2025 Exam Portal | Contact Us: examportal@example.com</p>
+    </div>
+
+    <!-- JavaScript for Dark Mode -->
+    <script>
+          // Function to toggle dark mode and save the preference
+          function toggleDarkMode() {
+            document.body.classList.toggle("dark-mode");
+            let button = document.getElementsByClassName("btn-outline-dark")[0];
+
+            // Save theme preference to localStorage
+            if (document.body.classList.contains("dark-mode")) {
+              localStorage.setItem("theme", "dark");
+              button.textContent = "☀️ Light Mode";
+              button.style.backgroundColor = "white";
+              button.style.color = "black";
+            } else {
+              localStorage.setItem("theme", "light");
+              button.textContent = "🌙 Dark Mode";
+              button.style.backgroundColor = "black";
+              button.style.color = "white";
+            }
+          }
+
+          // Apply the saved theme on page load
+          window.onload = function () {
+            let button = document.getElementsByClassName("btn-outline-dark")[0];
+
+            if (localStorage.getItem("theme") === "dark") {
+              document.body.classList.add("dark-mode");
+              button.textContent = "☀️ Light Mode";
+              button.style.backgroundColor = "white";
+              button.style.color = "black";
+            } else {
+              button.textContent = "🌙 Dark Mode";
+              button.style.backgroundColor = "black";
+              button.style.color = "white";
+            }
+          };
+          function showUploadAnswersForm() {
+            document.getElementById("getResultsForm").classList.add("d-none");
+            document.getElementById("uploadAnswersForm").classList.remove("d-none");
+            let container = document.getElementById("AnswersContainer");
+            container.innerHTML = "";
+            for (let i = 1; i <= 10; i++) {
+              container.innerHTML += `
+                <div class='mb-3'>
+                  <label>Question ${i}</label>
+                  <input type='text' name='answer${i}' class='form-control' placeholder="Answer" required>
+                </div>`;
+            }
+          }
+          document
+      .getElementById("AnswersForm")
+      .addEventListener("submit", function (event) {
+        event.preventDefault();
+        let formData = new FormData(this);
+
+        fetch("/upload_answers", {
+          method: "POST",
+          body: formData
+        })
+          .then((response) => response.json())
+          .then((data) => {
+            alert(data.message || "Error: " + data.error);
+            // Now call the second endpoint
+            return fetch("/calculate_result", {
+              method: "POST",
+              body: formData
+            });
+          })
+          .then((response) => response.json())
+          .then((data) => {
+            alert(data.message || "Error: " + data.error);
+            location.reload(); // Forces a hard refresh
+          })
+          .catch((error) => console.error("Error:", error));
+      });
+
+          function showGetResultsFrom() {
+            document.getElementById("uploadAnswersForm").classList.add("d-none");
+            document.getElementById("getResultsForm").classList.remove("d-none");
+          }
+          const user={{ user|tojson }};
+            document
+            .getElementById("ResultsForm")
+            .addEventListener("submit", function (event) {
+              event.preventDefault();
+              let formData = new FormData(this);
+
+              fetch("/get_results", { method: "POST", body: formData })
+                .then((response) => response.json())
+                .then((data) => {
+                  console.log("Fetched Result Data:", data); // Debugging line
+
+                  if (data.error) {
+                    console.error("Error fetching results:", data.error);
+                    return;
+                  }
+                  
+                  uploaded_answers=data.uploaded_answers;
+                  console.log("Uploaded Answers:", uploaded_answers); // Debugging line
+                  console.log("Result Data:", data.results); // Debugging line
+                  let table = document.getElementById("resultTable");
+                  if (uploaded_answers == true) {
+                  resultData=data.results;
+                  table.innerHTML = ""; // Clear existing data
+                  if(user.role == 'faculty'){
+                    if (resultData.length === 0) {
+                      table.innerHTML =
+                        "<tr><td colspan='4' class='text-center'>No one attended the test</td></tr>";
+                      return;
+                    }
+                    resultData.forEach((result) => {
+                      let row = table.insertRow();
+                      row.innerHTML = `
+                        <td>${result.studentid}</td>
+                        <td>${result.subjectid}</td>
+                        <td>${result.assesmentid}</td>
+                        <td>${result.result}</td>
+                      `;
+                    });
+                  }
+                  else{
+                    if (resultData.length === 0) {
+                      table.innerHTML =
+                        "<tr><td colspan='3' class='text-center'>You are absent</td></tr>";
+                      return;
+                    }
+                    table.innerHTML = `
+                      <tr>
+                        <td>${resultData[0].subjectid}</td>
+                        <td>${resultData[0].assesmentid}</td>
+                        <td>${resultData[0].result}</td>
+                      </tr>
+                    `;
+                  }}
+                  else {
+                    if(user.role == 'faculty'){
+                      table.innerHTML =
+                        "<tr><td colspan='4' class='text-center'>Result isn't uploaded Yet</td></tr>";
+                      return;
+                    }
+                    else{
+                      table.innerHTML =
+                        "<tr><td colspan='3' class='text-center'>Result isn't uploaded Yet</td></tr>";
+                      return;
+                    }
+                  }
+
+                  console.log("Table updated successfully!");
+                })
+                .catch((error) => console.error("Error:", error));
+            });
+    </script>
+    {% if user.role == 'faculty' %}
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        document.getElementById("uploadAnswersBtn").classList.remove("d-none");
+      });
+    </script>
+    {% endif %}
+  </body>
+</html>
